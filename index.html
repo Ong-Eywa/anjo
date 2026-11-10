@@ -238,7 +238,10 @@ select,input[type=text]{font:inherit;color:var(--fg);background:var(--bg-2);bord
 .suggest .btn{font-size:12.5px;padding:5px 10px}
 
 /* Tela de curso numa plataforma (simulação) */
-.platform{margin-top:18px;border:1px solid #243244;border-radius:14px;overflow:hidden;background:#0e1620;box-shadow:0 20px 60px #0008;color:#e8edf3}
+.platform{margin-inline:calc(50% - 50vw);min-height:100vh;overflow:hidden;background:#0e1620;color:#e8edf3;border-bottom:1px solid #223042}
+html,body{overflow-x:hidden}
+.pbar{padding-left:max(16px, env(safe-area-inset-left, 0px)) !important;padding-right:max(16px, env(safe-area-inset-right, 0px)) !important}
+.pbody{min-height:calc(100vh - 56px)}
 .pbar{display:flex;align-items:center;gap:16px;padding:10px 16px;background:#101b27;border-bottom:1px solid #223042}
 .pmenu{display:flex;flex-direction:column;gap:4px;width:20px;flex:none}
 .pmenu i{display:block;height:2px;background:#cfd8e3;border-radius:2px}
@@ -352,7 +355,7 @@ pre.prompt{white-space:pre-wrap;font-family:var(--font-mono);font-size:12px;colo
 .orb .ring,.orb .core,.orb .spark{display:none}
 .orb-btn .orb{animation:breathe 4.5s ease-in-out infinite;filter:drop-shadow(0 0 10px #f2c35b88)}
 .orb-btn.calling .orb{filter:drop-shadow(0 0 24px #f2c35bdd)}
-html,body{background:linear-gradient(180deg,#0c120fcc,#0c120ff0 55%),var(--forest) center top/cover fixed,var(--bg)}
+html,body{background:#0b121a}
 .overlay{background:linear-gradient(#070b09bb,#070b09e0),var(--forest) center/cover}
 .practice{background:#121b16d0;backdrop-filter:blur(8px)}
 .card:not(.bubble){background:linear-gradient(#151f19d9,#151f19f0),var(--forest) center/cover}
@@ -360,13 +363,6 @@ html,body{background:linear-gradient(180deg,#0c120fcc,#0c120ff0 55%),var(--fores
 </style>
 
 <div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="orb" style="width:44px;height:44px" aria-hidden="true"><div class="ring r1"></div><div class="ring r2"></div><div class="core"></div></div>
-      <div><h1>ANJO</h1><small>IA regenerativa · EYWA</small></div>
-    </div>
-    <p>Protótipo navegável. O curso e a plataforma são simulados para mostrar como o ANJO acompanha o aluno. Dê play na aula e use o painel da demo para acelerar o tempo.</p>
-  </header>
 
   <main class="platform" aria-label="Curso na plataforma (simulação)">
     <div class="pbar">
@@ -418,7 +414,7 @@ html,body{background:linear-gradient(180deg,#0c120fcc,#0c120ff0 55%),var(--fores
     </div>
   </main>
 
-  <h2 class="demo-title">Painel da apresentação <small>fora da plataforma: controles da demo e o que o ANJO está pensando</small></h2>
+  <h2 class="demo-title">Painel da apresentação <small>Protótipo do ANJO, IA regenerativa da EYWA. O curso acima é simulado: dê play na aula e use estes controles para acelerar o tempo.</small></h2>
   <div class="app">
     <section class="panel demo">
       <div class="box">
