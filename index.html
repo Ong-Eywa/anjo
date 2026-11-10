@@ -312,6 +312,14 @@ html,body{overflow-x:hidden}
 .demo-title small{font-family:var(--font-body);font-size:12.5px;color:var(--muted);font-weight:400}
 .panel.demo{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;align-items:start}
 
+body:not(.demo) .demo-only{display:none !important}
+body:not(.demo){padding-block:0}
+body:not(.demo) .platform{border-bottom:none}
+.card .balance{margin-bottom:12px}
+.card .stat{background:#0f1813}
+.formmini{display:flex;gap:10px;align-items:center;font-size:13px;color:#cfd9d1}
+.formmini img{width:56px;height:56px;border-radius:10px;object-fit:cover;border:1.5px solid var(--gold);flex:none}
+.card .cat .chips{gap:5px}
 /* Formas do ANJO, check-in e catálogo */
 .forms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
 .form{position:relative;border-radius:8px;overflow:hidden;border:1.5px solid transparent;opacity:.3;filter:grayscale(.6)}
@@ -409,22 +417,22 @@ html,body{background:#0b121a}
           <div class="ptabs" aria-hidden="true"><span class="on">Descrição</span><span>Materiais</span><span>Comentários</span></div>
           <p id="lessonDesc"></p>
         </div>
-        <div class="status-row" id="statusRow"></div>
+        <div class="status-row demo-only" id="statusRow"></div>
       </section>
     </div>
   </main>
 
-  <h2 class="demo-title">Painel da apresentação <small>Protótipo do ANJO, IA regenerativa da EYWA. O curso acima é simulado: dê play na aula e use estes controles para acelerar o tempo.</small></h2>
-  <div class="app">
+  <h2 class="demo-title demo-only">Modo apresentação <small>Visível só para quem apresenta. Aperte a tecla D para esconder ou mostrar. O curso acima é simulado.</small></h2>
+  <div class="app demo-only">
     <section class="panel demo">
       <div class="box">
         <h3>Painel da demo <span>só para apresentação</span></h3>
         <div class="field">
           <label for="speed">Velocidade do tempo</label>
           <select id="speed">
+            <option value="1" selected>Tempo real</option>
             <option value="60">Demo rápida (1 s = 1 min de aula)</option>
             <option value="10">Demo lenta (1 s = 10 s de aula)</option>
-            <option value="1">Tempo real</option>
           </select>
         </div>
         <div class="btnrow">
@@ -489,7 +497,7 @@ html,body{background:#0b121a}
     </section>
   </div>
 
-  <section class="spec" aria-label="Como funciona">
+  <section class="spec demo-only" aria-label="Como funciona">
     <div>
       <h2>Como o ANJO decide</h2>
       <ul>
@@ -731,7 +739,7 @@ html,body{background:#0b121a}
     lastWater:0, done:new Set(), overlay:false, cardMode:null,
   });
   let state = fresh();
-  let speed = 60;
+  let speed = 1;
 
   // ---------- Helpers ----------
   const mmss = (sec) => { sec = Math.max(0, Math.round(sec)); return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"); };
@@ -931,8 +939,32 @@ html,body{background:#0b121a}
       m.append(btn("Preciso de uma pausa agora", "", () => { closeCard(); suggest("pedido do aluno", true); }),
                btn("Como estou agora", "", () => openCard("checkin")),
                btn("Conversar com o ANJO", "", () => { closeCard(); openChat(); }),
-               btn("Ver meu balanço", "", () => { closeCard(); $("bCorpo").closest(".box").scrollIntoView({behavior:"smooth", block:"center"}); }));
+               btn("Explorar práticas", "", () => openCard("explorar")),
+               btn("Meu balanço", "", () => openCard("balanco")));
       body.append(m);
+    } else if (mode === "explorar"){
+      h.textContent = "Explorar práticas";
+      p.textContent = "Escolha uma pausa do tamanho do seu momento.";
+      const box = document.createElement("div"); box.className = "cat";
+      renderCatalog(box);
+      body.append(box);
+    } else if (mode === "balanco"){
+      const c = state.counts;
+      const byDim = (d) => Object.keys(c).filter(k => PRACTICES[k].dim === d).reduce((a, k) => a + c[k], 0);
+      let st = 0; STAGES.forEach((s, i) => { if (state.seeds >= s.at) st = i; });
+      const F = FORMS[state.form];
+      h.textContent = "Seu balanço de hoje";
+      p.textContent = `${minLabel(state.learn)} de aula · ${state.seeds} ${state.seeds === 1 ? "semente" : "sementes"} · árvore em ${STAGES[st].n}`;
+      const g = document.createElement("div"); g.className = "balance";
+      [["Corpo","corpo","corpo"],["Mente","mente","mente"],["Visão","visao","visao"],["Natureza","nat","nat"]].forEach(([lab, d, cls]) => {
+        const s = document.createElement("div"); s.className = "stat " + cls;
+        s.innerHTML = '<div class="k"></div><div class="v"></div>';
+        s.firstChild.textContent = lab; s.lastChild.textContent = byDim(d); g.append(s);
+      });
+      const f = document.createElement("div"); f.className = "formmini";
+      f.innerHTML = `<img alt="" src="${IMG[F.img]}"><span></span>`;
+      f.lastChild.textContent = `Seu ANJO: ${F.n}. ${F.d}.`;
+      body.append(g, f);
     } else if (mode === "finish"){
       h.textContent = "Curso concluído!";
       p.textContent = `Você aprendeu por ${minLabel(state.learn)} e cuidou de si ${Object.values(state.counts).reduce((a,b)=>a+b,0)} vezes no caminho. Suas ${state.seeds} sementes vão para o plantio no Projeto Elysium.`;
@@ -975,8 +1007,8 @@ html,body{background:#0b121a}
   }
 
   // Catálogo Explorar
-  function renderCatalog(){
-    const box = $("catalog"); box.textContent = "";
+  function renderCatalog(box){
+    box = box || $("catalog"); box.textContent = "";
     const group = (title, keys) => {
       const h = document.createElement("h4"); h.textContent = title; box.append(h);
       const c = document.createElement("div"); c.className = "chips";
@@ -1374,7 +1406,11 @@ Responda sempre em ${LANG[state.lang]}.`;
   $("lang").onchange = (e) => { state.lang = e.target.value; };
   $("adapted").onchange = (e) => { state.adapted = e.target.checked; log("Preferência alterada", e.target.checked ? "Movimentos adaptados ligados: exercícios sentados e suaves." : "Movimentos adaptados desligados."); };
   $("anjoOff").onchange = (e) => { state.off = e.target.checked; $("orbBtn").classList.toggle("quiet", state.off); if (state.off) closeCard(); log(state.off ? "ANJO silenciado por hoje" : "ANJO reativado", state.off ? "Nenhum convite até amanhã. O aluno ainda pode chamar o ANJO." : null); renderPlayer(); };
+  // Modo apresentação: escondido por padrão; tecla D (ou link com #demo) mostra
+  if (location.hash === "#demo") document.body.classList.add("demo");
   document.addEventListener("keydown", (e) => {
+    const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "");
+    if (!typing && (e.key === "d" || e.key === "D") && !e.metaKey && !e.ctrlKey){ document.body.classList.toggle("demo"); return; }
     if (e.key !== "Escape") return;
     if (!$("chat").hidden){ $("chat").hidden = true; return; }
     if (!$("card").hidden){ $("cardClose").click(); }
