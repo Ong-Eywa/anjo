@@ -887,7 +887,7 @@ html,body{background:#0b121a}
       no.onclick = () => { sel = "none"; ch.querySelectorAll(".choice").forEach(x => { x.classList.remove("sel"); x.setAttribute("aria-pressed", "false"); }); no.classList.add("sel"); no.setAttribute("aria-pressed", "true"); };
       ch.append(no);
       const note = document.createElement("p"); note.className = "small";
-      note.textContent = "As pausas se alternam entre respiração e corpo. Eu não vigio, não vendo seus dados e não disputo sua atenção. Você pode mudar tudo ou me silenciar quando quiser.";
+      note.textContent = "As pausas se alternam entre respiração e corpo. Você pode mudar tudo ou me silenciar quando quiser.";
       const r = document.createElement("div"); r.className = "btnrow";
       r.append(btn("Confirmar", "primary", () => {
         if (sel === "none"){
