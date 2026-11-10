@@ -166,7 +166,6 @@ select,input[type=text]{font:inherit;color:var(--fg);background:var(--bg-2);bord
 .plist small{color:var(--muted);white-space:nowrap}
 #cardBody{max-height:calc(100vh - 170px);overflow:auto}
 .bubble-orb{position:absolute;top:-34px;left:-14px;width:68px;height:68px;pointer-events:none}
-.card:not(.bubble):not(.suggest) .bubble-orb{display:none}
 .card.suggest{padding-top:34px}
 .card.suggest .bubble-orb{left:50%;margin-left:-40px;top:-46px;width:80px;height:80px}
 .card.bubble{background:#fbfaf6;color:#1b1f1c;border:none;backdrop-filter:none;box-shadow:0 18px 50px #000b,0 0 44px #f2c35b40;padding:24px 20px 18px}
@@ -368,6 +367,21 @@ html,body{background:#0b121a}
 .practice{background:#121b16d0;backdrop-filter:blur(8px)}
 .card:not(.bubble){background:linear-gradient(#151f19d9,#151f19f0),var(--forest) center/cover}
 @media (prefers-reduced-motion: reduce){.orb-btn .orb{animation:none}}
+/* Logo do ANJO em todas as telas */
+.card:not(.bubble):not(.suggest) #cardBody{padding-top:24px}
+.porb{width:70px;height:70px;margin:-8px auto 2px;filter:drop-shadow(0 0 16px #f2c35b99);animation:breathe 4.5s ease-in-out infinite}
+.chat header .hlogo{display:flex;align-items:center;gap:10px}
+.chat header .orb{width:40px;height:40px;flex:none;filter:drop-shadow(0 0 8px #f2c35b88)}
+.toast .orb{width:38px;height:38px;flex:none;filter:drop-shadow(0 0 8px #f2c35b88)}
+/* Narração e música */
+.audiorow{display:flex;gap:8px;justify-content:center;margin:10px 0 0;flex-wrap:wrap}
+.audiorow button{font:inherit;font-size:12.5px;color:var(--muted);background:#ffffff0d;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.audiorow button[aria-pressed="true"]{color:var(--gold);border-color:#f2c35b66;background:#f2c35b14}
+.audiorow svg{width:15px;height:15px}
+/* Imagem de cada ação */
+.scene{width:min(380px,100%);aspect-ratio:16/9;margin:14px auto 0;border-radius:14px;overflow:hidden;border:1px solid #f2c35b33;box-shadow:0 6px 24px #0006}
+.scene svg{display:block;width:100%;height:100%}
+@media (prefers-reduced-motion: reduce){.porb{animation:none}}
 </style>
 
 <div class="wrap">
@@ -558,20 +572,26 @@ html,body{background:#0b121a}
 </div>
 
 <div class="toast" id="toast" hidden role="status">
-  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--sky)" stroke-width="1.8" style="flex:none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+  <div class="orb" aria-hidden="true"></div>
   <span style="flex:1;min-width:0" id="toastText">Olhe para algo distante por 20 segundos.</span>
   <button class="btn" id="toastGo">Fazer agora</button>
 </div>
 
 <div class="overlay" id="overlay" hidden>
   <div class="practice" id="practiceBox" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div class="orb porb" aria-hidden="true"></div>
     <div id="practiceRun">
       <div class="eyebrow">Pausa com o ANJO</div>
       <p class="psub" id="pSub" hidden>Movimente-se um pouco para cuidar do seu corpo. Siga o exercício e sinta a diferença.</p>
       <h2 id="pTitle">Respiração</h2>
       <div class="step-count" id="pStep">Etapa 1 de 1</div>
       <div class="exbar" id="exBar" hidden><i id="exFill"></i></div>
+      <div class="audiorow">
+        <button type="button" id="voiceBtn" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span>Narração ligada</span></button>
+        <button type="button" id="musicBtn" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Música ligada</span></button>
+      </div>
       <div class="exlist" id="exList" hidden></div>
+      <div class="scene" id="pScene" hidden role="img"></div>
       <div class="dial">
         <div class="breath" id="breath" hidden></div>
         <div class="eyeguide" id="eyeGuide" hidden><i id="eyeDot"></i></div>
@@ -602,7 +622,7 @@ html,body{background:#0b121a}
 
 <aside class="chat" id="chat" hidden aria-label="Conversa com o ANJO">
   <header>
-    <h3>Conversa com o ANJO</h3>
+    <div class="hlogo"><div class="orb" aria-hidden="true"></div><h3>Conversa com o ANJO</h3></div>
     <button class="btn ghost" id="chatClose">Fechar</button>
   </header>
   <div class="msgs" id="msgs"></div>
@@ -673,46 +693,186 @@ html,body{background:#0b121a}
     maos:{name:"Alongamento de mãos e braços", time:"1 min", size:"curta", seeds:2, dim:"corpo", color:"var(--leaf)",
       icon:'<path fill="#2e9d5b" d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/>'},
   };
+  // ---------- Ilustrações de cada ação (vetor, no estilo dos slides) ----------
+  const SC = (label, inner) => `<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" aria-label="${label}"><defs><radialGradient id="sgbg" cx="50%" cy="38%" r="80%"><stop offset="0" stop-color="#23432f"/><stop offset="1" stop-color="#0b1510"/></radialGradient><radialGradient id="sgglow"><stop offset="0" stop-color="#f2c35b" stop-opacity=".6"/><stop offset="1" stop-color="#f2c35b" stop-opacity="0"/></radialGradient><linearGradient id="sgsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd0f0"/><stop offset="1" stop-color="#f6e2b8"/></linearGradient></defs><rect width="320" height="180" fill="url(#sgbg)"/><circle cx="40" cy="30" r="1.6" fill="#ffe9a8" opacity=".7"/><circle cx="286" cy="150" r="1.4" fill="#ffe9a8" opacity=".6"/><circle cx="270" cy="26" r="1.2" fill="#ffe9a8" opacity=".6"/>${inner}</svg>`;
+  const C = "#f4e4c4", G = "#f2c35b", K = "#14251b";
+  const L = (d, w=12, c=C, x="") => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" ${x}/>`;
+  const HEAD = (x, y, r=15) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${C}"/>`;
+  const PULSE = (dur=10) => `<animate attributeName="opacity" values=".15;1;.15" dur="${dur}s" repeatCount="indefinite"/>`;
+  const ARROW = (d, hx, hy, ang) => L(d, 3, G) + `<path d="M0 0 L-8 -5 M0 0 L-8 5" transform="translate(${hx} ${hy}) rotate(${ang})" stroke="${G}" stroke-width="3" stroke-linecap="round" fill="none"/>`;
+  // Pessoa sentada, de lado
+  const SEAT = (arms) => L("M114 128 H178 M120 128 V162 M172 128 V162 M114 128 V76", 5, "#557a62") + L("M60 162 H262", 2, "#557a62") +
+    HEAD(148, 52) + L("M146 74 L146 116", 20) + L("M148 120 L194 122", 16) + L("M196 124 L198 158", 13) + L("M198 159 L214 159", 8) + L(arms, 10);
+  // Pessoa de frente, em meditação
+  const LOTUS = () => HEAD(160, 50) + L("M160 72 L160 112", 22) + L("M122 132 Q160 114 198 132", 18) + L("M152 80 L134 104 L146 124", 10) + L("M168 80 L186 104 L174 124", 10);
+  // Pessoa de frente, em pé
+  const STAND = (arms) => HEAD(160, 40) + L("M160 62 L160 116", 24) + L("M154 120 L148 164", 13) + L("M166 120 L172 164", 13) + L(arms, 10);
+  // Rosto de frente
+  const FACE = (eyes, mouth) => `<circle cx="160" cy="92" r="54" fill="${C}"/>` + eyes + mouth;
+  const CLOSED = L("M132 86 q9 7 18 0", 3.5, K) + L("M170 86 q9 7 18 0", 3.5, K);
+  const SCENES = {
+    respira: SC("Respiração profunda, com a mão na barriga", `<circle cx="150" cy="104" r="26" fill="url(#sgglow)"><animate attributeName="r" values="16;30;16" dur="10s" repeatCount="indefinite"/></circle>` + SEAT("M146 82 L164 100 L152 108") +
+      `<g>${L("M172 50 q10 -8 20 0 t20 0 t20 0", 3, G)}${PULSE(10)}</g><g>${L("M174 62 q10 -6 18 0 t18 0", 2.5, G, 'opacity=".6"')}${PULSE(10)}</g>`),
+    resp48: SC("Inspire em 4 segundos e expire em 8", SEAT("M146 82 L162 104 L186 112") +
+      ARROW("M236 36 L178 48", 178, 48, 168) + `<text x="242" y="36" fill="${G}" font-family="Sora, sans-serif" font-size="15" font-weight="600">4s</text>` +
+      ARROW("M176 60 L236 78", 236, 78, 17) + `<text x="242" y="88" fill="${G}" font-family="Sora, sans-serif" font-size="15" font-weight="600">8s</text>` +
+      `<text x="226" y="20" fill="#cfe3d4" font-family="Nunito Sans, sans-serif" font-size="11">inspire</text><text x="226" y="106" fill="#cfe3d4" font-family="Nunito Sans, sans-serif" font-size="11">expire</text>`),
+    clareza: SC("Respiração livre, com calma e presença", `<circle cx="160" cy="70" r="70" fill="url(#sgglow)">${PULSE(8)}</circle>` + LOTUS() +
+      `<circle cx="112" cy="54" r="2.5" fill="${G}">${PULSE(5)}</circle><circle cx="210" cy="44" r="2" fill="${G}">${PULSE(7)}</circle><circle cx="200" cy="96" r="2.5" fill="${G}">${PULSE(6)}</circle>`),
+    olhos: SC("Olhar para cima, para baixo e para os lados sem mexer a cabeça", FACE(
+      `<ellipse cx="140" cy="84" rx="13" ry="9" fill="#fffaf0" stroke="${K}" stroke-width="2"/><ellipse cx="180" cy="84" rx="13" ry="9" fill="#fffaf0" stroke="${K}" stroke-width="2"/>` +
+      `<g fill="${K}"><circle cx="140" cy="84" r="5"/><circle cx="180" cy="84" r="5"/><animateTransform attributeName="transform" type="translate" values="0 -4;0 -4;0 4;0 4;7 0;7 0;-7 0;-7 0;0 -4" keyTimes="0;.2;.25;.45;.5;.7;.75;.95;1" dur="12s" repeatCount="indefinite"/></g>`,
+      L("M146 116 q14 8 28 0", 3.5, K)) +
+      ARROW("M160 32 V12", 160, 12, -90) + ARROW("M160 152 V172", 160, 172, 90) + ARROW("M96 92 H72", 72, 92, 180) + ARROW("M224 92 H248", 248, 92, 0)),
+    longe: SC("Olhar para algo distante pela janela", `<rect x="206" y="22" width="96" height="104" rx="4" fill="url(#sgsky)" stroke="#557a62" stroke-width="5"/><circle cx="278" cy="44" r="9" fill="${G}"/><path d="M209 112 Q240 92 299 104 V123 H209Z" fill="#6a7a3b"/><rect x="241" y="86" width="4" height="22" fill="#5b3f2a"/><circle cx="243" cy="80" r="14" fill="#3e7752"/>` +
+      `<g transform="translate(-48 0)">${SEAT("M146 82 L162 104 L186 112")}</g>` + L("M112 50 L232 82", 2.5, G, 'stroke-dasharray="2 7"')),
+    agua: SC("Beber água devagar", `<circle cx="160" cy="100" r="70" fill="url(#sgglow)" opacity=".5"/><path d="M134 88 L186 88 L180 150 L140 150Z" fill="#2f7fe0" opacity=".6"/><path d="M128 46 L192 46 L182 152 L138 152Z" fill="none" stroke="${C}" stroke-width="4" stroke-linejoin="round"/>` +
+      L("M134 88 q13 -6 26 0 t26 0", 2.5, "#cfe9ff") + `<path d="M226 52 c0 0 -10 13 -10 19 a10 10 0 0 0 20 0 c0 -6 -10 -19 -10 -19z" fill="#2f7fe0">${PULSE(4)}</path><path d="M98 80 c0 0 -7 9 -7 13 a7 7 0 0 0 14 0 c0 -4 -7 -13 -7 -13z" fill="#2f7fe0" opacity=".7"/>`),
+    postura: SC("Coluna longa, ombros para trás e pés no chão", SEAT("M146 82 L162 104 L186 112") + L("M147 22 V122", 2.5, G, 'stroke-dasharray="4 6"') +
+      ARROW("M176 82 L160 82", 160, 82, 180) + `<text x="182" y="86" fill="#cfe3d4" font-family="Nunito Sans, sans-serif" font-size="11">ombros para trás</text>` + `<circle cx="147" cy="22" r="3" fill="${G}"/>`),
+    mandibula: SC("Rosto e mandíbula relaxados", FACE(CLOSED, `<ellipse cx="160" cy="118" rx="8" ry="5" fill="${K}"/>`) +
+      `<g>${L("M80 100 q6 -6 12 0 t12 0", 3, G)}${L("M216 100 q6 -6 12 0 t12 0", 3, G)}${PULSE(6)}</g>`),
+    positivo: SC("Lembrar de algo bom do dia", `<circle cx="160" cy="92" r="60" fill="url(#sgglow)">${PULSE(6)}</circle>` + LOTUS() +
+      `<path d="M160 104 l-11 -11 a7 7 0 0 1 11 -9 a7 7 0 0 1 11 9z" fill="${G}"/>`),
+    escutar: SC("Fechar os olhos e escutar um som vivo", FACE(CLOSED, L("M148 116 q12 6 24 0", 3.5, K)) +
+      `<g>${L("M226 72 q10 20 0 40", 3, G)}${PULSE(4)}</g><g>${L("M242 62 q16 30 0 60", 3, G, 'opacity=".7"')}${PULSE(5)}</g>` + L("M262 34 q6 -6 12 0 q6 -6 12 0", 3, C) + L("M70 140 q10 -26 30 -30 q-4 24 -30 30z", 3, "#3e7752")),
+    esfregar: SC("Esfregar as mãos até aquecer", `<circle cx="160" cy="100" r="60" fill="url(#sgglow)">${PULSE(3)}</circle><rect x="122" y="62" width="42" height="84" rx="21" fill="${C}" transform="rotate(-10 143 104)"/><rect x="156" y="62" width="42" height="84" rx="21" fill="#e9d5ae" transform="rotate(10 177 104)"/>` +
+      `<g>${L("M150 50 q-6 -8 0 -16 q6 -8 0 -16", 3, G)}${L("M170 50 q-6 -8 0 -16 q6 -8 0 -16", 3, G)}${PULSE(2)}</g>` + ARROW("M92 104 H112", 112, 104, 0) + ARROW("M228 104 H208", 208, 104, 180)),
+    palming: SC("Mãos em concha sobre os olhos fechados", FACE("", L("M148 120 q12 6 24 0", 3.5, K)) +
+      `<ellipse cx="136" cy="84" rx="30" ry="22" fill="#e9d5ae" stroke="#c9b48c" stroke-width="2"/><ellipse cx="184" cy="84" rx="30" ry="22" fill="#e9d5ae" stroke="#c9b48c" stroke-width="2"/>` + `<circle cx="160" cy="92" r="80" fill="url(#sgglow)" opacity=".35"/>`),
+    maos: SC("Abrir e fechar as mãos devagar", `<rect x="86" y="84" width="46" height="52" rx="14" fill="${C}"/>` + L("M94 84 V54 M106 84 V46 M118 84 V48 M128 86 V58", 9) + L("M88 110 L72 92", 9) +
+      `<rect x="196" y="76" width="52" height="56" rx="18" fill="${C}"/>` + L("M206 92 H236 M206 106 H236 M206 120 H234", 2.5, "#c9b48c") + ARROW("M148 96 H178", 178, 96, 0) + ARROW("M178 116 H148", 148, 116, 180)),
+    punhos: SC("Alongar o punho puxando os dedos para trás", L("M30 128 H166", 20) + `<rect x="160" y="70" width="44" height="72" rx="16" fill="${C}"/>` + L("M168 70 V44 M180 68 V38 M192 70 V42", 9) +
+      L("M304 118 L240 50", 15, "#e9d5ae") + `<rect x="176" y="30" width="72" height="30" rx="14" fill="#e9d5ae" stroke="#c9b48c" stroke-width="2"/>` +
+      `<g>${ARROW("M130 40 q16 -26 40 -24", 170, 16, 5)}${PULSE(3)}</g><text x="18" y="34" fill="#cfe3d4" font-family="Nunito Sans, sans-serif" font-size="11">puxe os dedos para trás</text>`),
+    bracos: SC("Girar braços e ombros para trás", STAND("M148 70 L106 76 M172 70 L214 76") +
+      ARROW("M88 76 a20 20 0 1 1 6 14", 94, 90, 50) + ARROW("M232 76 a20 20 0 1 0 -6 14", 226, 90, 130)),
+    janela: SC("Olhar o céu, uma planta ou uma árvore", `<rect x="92" y="18" width="136" height="132" rx="6" fill="url(#sgsky)" stroke="#557a62" stroke-width="6"/><circle cx="196" cy="48" r="13" fill="${G}"><animate attributeName="r" values="12;15;12" dur="6s" repeatCount="indefinite"/></circle>` +
+      `<path d="M95 120 Q140 92 225 112 V147 H95Z" fill="#6a7a3b"/><rect x="134" y="84" width="6" height="34" fill="#5b3f2a"/><circle cx="137" cy="76" r="20" fill="#3e7752"/><circle cx="124" cy="86" r="12" fill="#3e7752"/>` + L("M160 18 V150 M92 84 H228", 4, "#557a62") +
+      L("M110 40 q4 -4 8 0 q4 -4 8 0", 2, "#3a5566") + `<path d="M58 168 L66 140 H86 L94 168Z" fill="#a0603a"/>` + L("M76 140 q-12 -22 -2 -40 M76 140 q10 -20 4 -36", 4, "#3e7752")),
+    presenca: SC("Percorrer o corpo com a atenção, dos pés à cabeça", `<circle cx="160" cy="96" r="76" fill="url(#sgglow)" opacity=".45"/>` + STAND("M146 70 L136 118 M174 70 L184 118") +
+      `<rect x="108" y="160" width="104" height="5" rx="2.5" fill="${G}" opacity=".75"><animate attributeName="y" values="164;22;164" dur="12s" repeatCount="indefinite"/></rect>`),
+  };
+  const sceneURL = (k) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(SCENES[k]);
+
+  // ---------- Narração (voz do navegador) e música de fundo ----------
+  const prefs = (() => { try { return JSON.parse(localStorage.getItem("anjo-audio") || "{}"); } catch { return {}; } })();
+  let voiceOn = prefs.voice !== false, musicOn = prefs.music !== false;
+  const savePrefs = () => { try { localStorage.setItem("anjo-audio", JSON.stringify({voice:voiceOn, music:musicOn})); } catch {} };
+  const TTS = window.speechSynthesis;
+  let ptVoice = null;
+  const pickVoice = () => {
+    const vs = TTS ? TTS.getVoices() : [];
+    // Só vozes do português do Brasil (nunca de Portugal)
+    const br = vs.filter(v => /^pt[-_]BR$/i.test(v.lang) && !/Joana|Catarina|Portugal/i.test(v.name));
+    const pick = (re) => br.find(v => re.test(v.name));
+    ptVoice = pick(/Luciana/) || pick(/Francisca|Thalita|Antonio/) || pick(/Google português do Brasil/) || pick(/Natural|Premium|Enhanced/) ||
+      br.find(v => !/Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley/.test(v.name)) || br[0] || null;
+  };
+  if (TTS){ pickVoice(); TTS.onvoiceschanged = pickVoice; }
+  function say(text, cut){
+    if (!voiceOn || !TTS) return;
+    try {
+      if (cut) TTS.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "pt-BR"; u.rate = 0.9; u.pitch = 1.02; u.volume = 1;
+      if (ptVoice) u.voice = ptVoice;
+      TTS.speak(u);
+    } catch {}
+  }
+  const hush = () => { try { TTS && TTS.cancel(); } catch {} };
+  const speaking = () => !!(TTS && (TTS.speaking || TTS.pending));
+
+  let music = null;
+  function musicStart(){
+    if (!musicOn || music) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      const t0 = actx.currentTime;
+      const master = actx.createGain(); master.gain.setValueAtTime(0.0001, t0); master.gain.exponentialRampToValueAtTime(0.5, t0 + 4);
+      const lp = actx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1100; lp.Q.value = 0.3;
+      lp.connect(master); master.connect(actx.destination);
+      const nodes = [];
+      // Acorde suave e contínuo (lá maior com nona), cada voz respirando devagar
+      [110, 164.81, 220, 277.18, 329.63, 493.88].forEach((f, k) => {
+        const o = actx.createOscillator(); o.type = k < 2 ? "sine" : "triangle"; o.frequency.value = f; o.detune.value = (k % 2 ? 4 : -4);
+        const g = actx.createGain(); g.gain.value = k < 2 ? 0.05 : 0.022;
+        const lfo = actx.createOscillator(); lfo.frequency.value = 0.04 + k * 0.017;
+        const lg = actx.createGain(); lg.gain.value = k < 2 ? 0.02 : 0.014;
+        lfo.connect(lg).connect(g.gain); o.connect(g).connect(lp);
+        o.start(); lfo.start(); nodes.push(o, lfo);
+      });
+      // Notas de sino esparsas na escala pentatônica
+      const bells = [440, 493.88, 554.37, 659.25, 739.99, 880];
+      const ring = () => {
+        if (!music) return;
+        const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+        o.type = "sine"; o.frequency.value = bells[Math.floor(Math.random() * bells.length)];
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.03, t + 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t + 4);
+        o.connect(g).connect(master); o.start(t); o.stop(t + 4.1);
+        music.timer = setTimeout(ring, 3500 + Math.random() * 5000);
+      };
+      music = {master, nodes, timer:null};
+      music.timer = setTimeout(ring, 2500);
+    } catch {}
+  }
+  function musicStop(){
+    if (!music) return;
+    const m = music; music = null; clearTimeout(m.timer);
+    try {
+      const t = actx.currentTime;
+      m.master.gain.cancelScheduledValues(t); m.master.gain.setValueAtTime(Math.max(m.master.gain.value, 0.0002), t);
+      m.master.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+      setTimeout(() => { m.nodes.forEach(n => { try { n.stop(); } catch {} }); try { m.master.disconnect(); } catch {} }, 1800);
+    } catch {}
+  }
+  function renderAudioBtns(){
+    const v = $("voiceBtn"), m = $("musicBtn");
+    v.setAttribute("aria-pressed", String(voiceOn)); v.querySelector("span").textContent = voiceOn ? "Narração ligada" : "Narração desligada";
+    m.setAttribute("aria-pressed", String(musicOn)); m.querySelector("span").textContent = musicOn ? "Música ligada" : "Música desligada";
+  }
+
   const COMPLETAS = ["Yoga regenerativo", "Banho de floresta", "Caminhada consciente", "Meditação guiada", "Ritual de sono", "Dança livre"];
 
   function steps(kind){
     const adapted = state.adapted;
     switch(kind){
       case "respiracao": return [
-        {t:"Respirações profundas", s:60, breath:[5,5], i:"Sente-se confortável e solte os ombros. Respire fundo pelo nariz, enchendo a barriga, e solte todo o ar devagar pelo nariz. Acompanhe o círculo ou feche os olhos."},
-        {t:"Inspire 4, expire 8", s:96, breath:[4,8], i:"Inspire pelo nariz em 4 segundos. Expire devagar pelo nariz em 8 segundos, soltando todo o ar. Acompanhe o círculo ou feche os olhos."},
-        {t:"Clareza", s:24, i:"Volte a respirar no seu ritmo. Perceba como está sua mente agora, mais calma e presente para voltar à aula."},
+        {t:"Respirações profundas", s:60, breath:[5,5], sc:"respira", i:"Sente-se confortável e solte os ombros. Respire fundo pelo nariz, enchendo a barriga, e solte todo o ar devagar pelo nariz. Acompanhe o círculo ou feche os olhos."},
+        {t:"Inspire 4, expire 8", s:96, breath:[4,8], sc:"resp48", i:"Inspire pelo nariz em 4 segundos. Expire devagar pelo nariz em 8 segundos, soltando todo o ar. Acompanhe o círculo ou feche os olhos."},
+        {t:"Clareza", s:24, sc:"clareza", i:"Volte a respirar no seu ritmo. Perceba como está sua mente agora, mais calma e presente para voltar à aula."},
       ];
       case "olhos": return [
-        {t:"Olhos em todas as direções", s:40, eyes:true, i:"Sem mexer a cabeça, siga o ponto com os olhos: para cima, para baixo, para a direita e para a esquerda."},
-        {t:"Olhe para longe", s:20, i:"Agora encontre algo a uns 6 metros de distância, por uma janela ou no fundo da sala. Deixe o olhar descansar ali e pisque devagar algumas vezes."},
+        {t:"Olhos em todas as direções", s:40, eyes:true, sc:"olhos", i:"Sem mexer a cabeça, siga o ponto com os olhos: para cima, para baixo, para a direita e para a esquerda."},
+        {t:"Olhe para longe", s:20, sc:"longe", i:"Agora encontre algo a uns 6 metros de distância, por uma janela ou no fundo da sala. Deixe o olhar descansar ali e pisque devagar algumas vezes."},
       ];
-      case "hidratacao": return [{t:"Gole de água", s:30, i:"Pegue um copo d'água e beba devagar, com atenção, em pequenos goles."}];
-      case "postura": return [{t:"Correção de postura", s:20, i:"Pés no chão, coluna longa, ombros para trás e para baixo, queixo levemente recolhido."}];
-      case "mandibula": return [{t:"Soltar a mandíbula", s:15, i:"Separe os dentes. Relaxe a língua, as bochechas e todo o rosto."}];
-      case "tresresp": return [{t:"Três respirações", s:36, breath:[4,8], i:"Três respirações lentas pelo nariz: inspire em 4 segundos e expire em 8. Acompanhe o círculo ou feche os olhos."}];
-      case "positivo": return [{t:"Pensamento positivo", s:20, i:"Lembre uma coisa boa do seu dia ou alguém a quem você quer agradecer."}];
-      case "escutar": return [{t:"Escutar a vida", s:20, i:"Feche os olhos e perceba um som vivo ao redor: um pássaro, o vento, uma voz."}];
+      case "hidratacao": return [{t:"Gole de água", s:30, sc:"agua", i:"Pegue um copo d'água e beba devagar, com atenção, em pequenos goles."}];
+      case "postura": return [{t:"Correção de postura", s:20, sc:"postura", i:"Pés no chão, coluna longa, ombros para trás e para baixo, queixo levemente recolhido."}];
+      case "mandibula": return [{t:"Soltar a mandíbula", s:15, sc:"mandibula", i:"Separe os dentes. Relaxe a língua, as bochechas e todo o rosto."}];
+      case "tresresp": return [{t:"Três respirações", s:36, breath:[4,8], sc:"resp48", i:"Três respirações lentas pelo nariz: inspire em 4 segundos e expire em 8. Acompanhe o círculo ou feche os olhos."}];
+      case "positivo": return [{t:"Pensamento positivo", s:20, sc:"positivo", i:"Lembre uma coisa boa do seu dia ou alguém a quem você quer agradecer."}];
+      case "escutar": return [{t:"Escutar a vida", s:20, sc:"escutar", i:"Feche os olhos e perceba um som vivo ao redor: um pássaro, o vento, uma voz."}];
       case "palming": return [
-        {t:"Aqueça as mãos", s:15, i:"Esfregue as palmas das mãos uma na outra até sentir calor."},
-        {t:"Olhos no escuro", s:45, i:"Feche os olhos e cubra-os com as mãos em concha, sem apertar. Respire devagar e descanse no escuro."},
+        {t:"Aqueça as mãos", s:15, sc:"esfregar", i:"Esfregue as palmas das mãos uma na outra até sentir calor."},
+        {t:"Olhos no escuro", s:45, sc:"palming", i:"Feche os olhos e cubra-os com as mãos em concha, sem apertar. Respire devagar e descanse no escuro."},
       ];
       case "maos": return [
-        {t:"Abrir e fechar as mãos", s:20, i:"Abra e feche as mãos 10 vezes, bem devagar, sentindo cada dedo."},
-        {t:"Punhos", s:20, sides:true, i:"Estique um braço à frente e puxe os dedos para trás com a outra mão. 10 segundos de cada lado: o ANJO avisa a hora de trocar."},
-        {t:"Braços e ombros", s:20, i:"Gire os braços e os ombros para trás, em círculos largos e lentos."},
+        {t:"Abrir e fechar as mãos", s:20, sc:"maos", i:"Abra e feche as mãos 10 vezes, bem devagar, sentindo cada dedo."},
+        {t:"Punhos", s:20, sides:true, sc:"punhos", i:"Estique um braço à frente e puxe os dedos para trás com a outra mão. 10 segundos de cada lado: o ANJO avisa a hora de trocar."},
+        {t:"Braços e ombros", s:20, sc:"bracos", i:"Gire os braços e os ombros para trás, em círculos largos e lentos."},
       ];
-      case "natureza": return [{t:"Janela viva", s:120, i:"Vá até uma janela ou área aberta. Olhe o céu, uma planta ou uma árvore e descreva para si mesmo o que vê. Respire o ar de fora sem pressa."}];
+      case "natureza": return [{t:"Janela viva", s:120, sc:"janela", i:"Vá até uma janela ou área aberta. Olhe o céu, uma planta ou uma árvore e descreva para si mesmo o que vê. Respire o ar de fora sem pressa."}];
       case "corpo": return adapted ? [
         {t:"Alongamento cervical", s:30, sides:true, img:"cervical", i:"Sentado, leve a mão sobre a cabeça e incline-a com suavidade para o lado. 15 segundos de cada lado: o ANJO avisa a hora de trocar. Vá só até onde for confortável."},
         {t:"Ombros e costas", s:30, sides:true, img:"ombros", i:"Sentado, leve uma mão ao ombro oposto e segure, com o braço cruzado à frente do peito. 15 segundos de cada lado: o ANJO avisa a hora de trocar."},
         {t:"Pernas e postura", s:60, img:"pernas", i:"Apoie as costas na cadeira e os pés no chão, se puder. Alongue a coluna e afaste os ombros das orelhas. Se for possível, estique uma perna de cada vez."},
-        {t:"Presença no corpo", s:60, img:null, i:"Feche os olhos se quiser. Percorra o corpo com a atenção, dos pés à cabeça. Onde houver tensão, respire e solte."},
+        {t:"Presença no corpo", s:60, img:"presenca", i:"Feche os olhos se quiser. Percorra o corpo com a atenção, dos pés à cabeça. Onde houver tensão, respire e solte."},
       ] : [
         {t:"Alongamento cervical", s:30, sides:true, img:"cervical", i:"Leve a mão sobre a cabeça e incline-a com suavidade para o lado. 15 segundos de cada lado: o ANJO avisa a hora de trocar. Respire durante o alongamento."},
         {t:"Ombros e costas", s:30, sides:true, img:"ombros", i:"Leve os braços acima da cabeça e segure o cotovelo com a mão oposta. 15 segundos de cada lado: o ANJO avisa a hora de trocar."},
         {t:"Pernas e postura", s:60, img:"pernas", parts:["Suba nos calcanhares","Círculos com o quadril"], swap:"Agora o quadril!", i:"Fique de pé, pés na largura do quadril. Suba nos calcanhares 10 vezes. Depois coloque as mãos na cintura e faça movimentos circulares com o quadril. 30 segundos cada: o ANJO avisa quando mudar."},
-        {t:"Presença no corpo", s:60, img:null, i:"Feche os olhos se quiser. Percorra o corpo com a atenção, dos pés à cabeça. Onde houver tensão, respire e solte."},
+        {t:"Presença no corpo", s:60, img:"presenca", i:"Feche os olhos se quiser. Percorra o corpo com a atenção, dos pés à cabeça. Onde houver tensão, respire e solte."},
       ];
     }
   }
@@ -1151,6 +1311,9 @@ html,body{background:#0b121a}
     log(`Pausa iniciada: ${PRACTICES[kind].name}`, why || null);
     $("practiceRun").hidden = false; $("practiceDone").hidden = true;
     $("overlay").hidden = false;
+    renderAudioBtns();
+    musicStart();
+    say("Vamos começar. Se quiser, feche os olhos e siga a minha voz.", true);
     renderStep();
     renderPlayer();
     $("pPause").focus();
@@ -1162,7 +1325,11 @@ html,body{background:#0b121a}
     $("pTitle").textContent = s.t;
     $("pStep").textContent = journey ? `Exercício ${pr.i+1} de ${n}` : PRACTICES[pr.kind].name + (n > 1 ? ` · etapa ${pr.i+1} de ${n}` : "");
     $("pSub").hidden = !journey; $("exBar").hidden = !journey; $("exList").hidden = !journey;
-    $("practiceBox").classList.toggle("compact", journey);
+    const scene = !journey && s.sc && SCENES[s.sc];
+    $("pScene").hidden = !scene;
+    if (scene && pr.sceneI !== pr.i){ pr.sceneI = pr.i; $("pScene").innerHTML = scene; $("pScene").setAttribute("aria-label", s.t); }
+    $("practiceBox").classList.toggle("compact", journey || !!scene);
+    if (pr.spokenI !== pr.i){ pr.spokenI = pr.i; say(s.t + ". " + s.i.replace(/Acompanhe o círculo ou feche os olhos\./, "Se quiser, feche os olhos.").replace(/siga o ponto com os olhos/, "siga a minha voz com os olhos")); }
     if (journey){
       $("exFill").style.width = ((pr.i + 1 - pr.left/s.s)/n*100) + "%";
       if (pr.shownI !== pr.i){
@@ -1170,8 +1337,9 @@ html,body{background:#0b121a}
         const list = $("exList"); list.textContent = "";
         pr.steps.forEach((x, j) => {
           const b = document.createElement("button");
-          b.className = "ex" + (j === pr.i ? " on" : j < pr.i ? " done" : "") + (x.img ? "" : " presence");
-          if (x.img) b.style.backgroundImage = `url(${IMG[x.img]})`;
+          b.className = "ex" + (j === pr.i ? " on" : j < pr.i ? " done" : "");
+          const src = IMG[x.img] || (SCENES[x.img] && sceneURL(x.img));
+          if (src) b.style.backgroundImage = `url("${src}")`;
           const sp = document.createElement("span"); sp.textContent = x.t; b.append(sp);
           b.setAttribute("aria-label", "Ir para " + x.t);
           b.onclick = () => { pr.i = j; pr.left = pr.steps[j].s; renderStep(); };
@@ -1215,7 +1383,15 @@ html,body{background:#0b121a}
     if (!pr || pr.paused || $("practiceRun").hidden) return;
     pr.left -= 1; pr.doneSecs += 1;
     const cs = pr.steps[pr.i];
-    if ((cs.sides || cs.parts) && pr.left === cs.s / 2) chime();
+    if ((cs.sides || cs.parts) && pr.left === cs.s / 2){ chime(); say(cs.swap || "Agora troque de lado.", true); }
+    const el = cs.s - pr.left;
+    if (cs.breath && pr.left > 1 && !speaking()){
+      const [inh, exh] = cs.breath, ph = el % (inh + exh);
+      if (ph === 0) say("Inspire"); else if (ph === inh) say("Expire devagar");
+    }
+    if (cs.eyes && el % 3 === 0 && pr.left > 1 && !speaking()){
+      say(["Para cima", "Para baixo", "Para a direita", "Para a esquerda"][Math.floor(el/3) % 4]);
+    }
     if (pr.left <= 0){ if (pr.i < pr.steps.length - 1) chime(); nextStep(); } else renderStep();
   }, 1000);
   // Som suave para avisar a troca de lado
@@ -1249,11 +1425,14 @@ html,body{background:#0b121a}
       log(`Pausa encerrada antes: ${P.name}`, "Sem sementes, sem cobrança. Tempo contínuo zerado.");
     }
     state.cont = 0; state.waitBoundary = false; state.deferred = false; state.lastEye = state.learn;
+    say(ok ? "Pausa concluída. Quando quiser, abra os olhos devagar e volte para a aula." : "Tudo bem parar antes. Qualquer pausa já conta.", true);
+    musicStop();
     $("practiceRun").hidden = true; $("practiceDone").hidden = false;
     renderBalance();
     $("backToClass").focus();
   }
   function closePractice(){
+    musicStop();
     $("overlay").hidden = true; state.overlay = false;
     if (pr?.wasPlaying) state.playing = true;
     pr = null; renderAll();
@@ -1369,7 +1548,13 @@ Responda sempre em ${LANG[state.lang]}.`;
   $("cardClose").onclick = () => { if (state.cardMode === "suggest") decline(15, "Convite fechado"); closeCard(); };
   $("checkinBtn").onclick = () => openCard("checkin");
   $("toastGo").onclick = () => { $("toast").hidden = true; startPractice("olhos", "a partir do lembrete visual"); };
-  $("pPause").onclick = () => { pr.paused = !pr.paused; renderStep(); };
+  $("pPause").onclick = () => {
+    pr.paused = !pr.paused;
+    if (pr.paused){ hush(); musicStop(); } else { musicStart(); say("Vamos continuar.", true); }
+    renderStep();
+  };
+  $("voiceBtn").onclick = () => { voiceOn = !voiceOn; if (!voiceOn) hush(); else if (pr) say(pr.steps[pr.i].t, true); savePrefs(); renderAudioBtns(); };
+  $("musicBtn").onclick = () => { musicOn = !musicOn; if (musicOn){ if (pr && !pr.paused) musicStart(); } else musicStop(); savePrefs(); renderAudioBtns(); };
   $("pNext").onclick = nextStep;
   $("pEnd").onclick = () => finishPractice(false);
   $("backToClass").onclick = closePractice;
